@@ -76,6 +76,9 @@ public class ${meta.type} implements Serializable {
 	</#if>
 
 	public void addOrderBy(OrderBy orderBy){
+    	if(orderByList==null){
+    		this.orderByList = new ArrayList<OrderBy>();
+        }
 		if(null==orderBy){
 			return;
 		}
