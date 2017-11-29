@@ -3,7 +3,6 @@ package ${meta.mapperPackage};
 
 import java.util.List;
 import org.apache.ibatis.annotations.Param;
-import org.springframework.stereotype.Repository;
 
 import ${meta.entityName};
 <#if meta.hasQueryModel>
@@ -16,7 +15,6 @@ import ${otherImport};
 </#list>
 </#if>
 
-@Repository
 public interface ${meta.entitySimpleName}Mapper {
 
 	int insert(${meta.entitySimpleName} ${meta.entitySimpleName?uncap_first});

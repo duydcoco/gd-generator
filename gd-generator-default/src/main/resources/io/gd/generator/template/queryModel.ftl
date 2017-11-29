@@ -1,10 +1,13 @@
 package ${meta.queryModelPackage};
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.HashSet;
 import java.io.Serializable;
+import java.util.stream.Collectors;
 
-import io.gd.generator.api.query.Direction;
+import io.gd.generator.meta.querymodel.OrderBy;
 <#if meta.useLombok>
 
 import lombok.Getter;
@@ -38,9 +41,8 @@ public class ${meta.type} implements Serializable {
 
 	private Integer pageSize;
 
-	private String orderBy;
+	private List<OrderBy> orderByList=new ArrayList<OrderBy>();
 
-	private Direction direction;
 	<#if !meta.useLombok>
 	<#if meta.queryModelFields??>
 	<#list meta.queryModelFields as queryModelField>
@@ -71,24 +73,20 @@ public class ${meta.type} implements Serializable {
 		this.pageSize = pageSize;
 	}
 
-	public String getOrderBy() {
-		return orderBy;
-	}
-
-	public Direction getDirection() {
-		return direction;
-	}
-
-	public void setDirection(Direction direction) {
-		this.direction = direction;
-	}
 	</#if>
 
-	public void setOrderBy(String orderBy) {
-		if (orderBy != null && !fieldNames.contains(orderBy)) {
-			throw new IllegalArgumentException("order by is invalid");
+	public void addOrderBy(OrderBy orderBy){
+		if(null==orderBy){
+			return;
 		}
-		this.orderBy = orderBy;
+		String orderByStr = orderBy.toString();
+		if(null!=orderByStr||orderByStr.length()!=0){
+			String orderByProp = orderByStr.split(" ")[0];
+			if(!fieldNames.contains(orderByProp)){
+				throw new IllegalArgumentException("field:"+orderByProp+" not found");
+			}
+			this.orderByList.add(orderBy);
+		}
 	}
 
 	public Long getOffset() {
@@ -98,14 +96,19 @@ public class ${meta.type} implements Serializable {
 		return ((long) pageNumber - 1) * pageSize;
 	}
 
-	public String getOrderByAndDirection() {
-		if (orderBy == null) {
-			return null;
-		}
-		String orderByStr = camelToUnderline(orderBy);
-		String directionStr = direction == null ? "desc" : direction.toString().toLowerCase();
-		return orderByStr + " " + directionStr;
-	}
+    public String getOrderByAndDirection() {
+        if (null==orderByList || orderByList.size()==0) {
+            return null;
+        }
+        List<String> tranStrList = orderByList
+                .stream()
+                .map(item->{
+                        String[] strArray = item.toString().split(" ");
+                        return camelToUnderline(strArray[0])+" "+strArray[1];
+                })
+                .collect(Collectors.toList());
+        return String.join(",",tranStrList);
+    }
 
 	private String camelToUnderline(String param) {
 		if (param == null || "".equals(param.trim())) {
